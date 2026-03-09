@@ -103,7 +103,7 @@
 
         // Run forecast agents for selected ticker
         const selectedTicker = ChartEngine.getCurrentTicker();
-        ForecastAgents.generateForecasts(selectedTicker);
+        ForecastAgents.generateForecasts(selectedTicker, ChartEngine.getCurrentTimeframe());
 
         // Update chart forecasts
         ChartEngine.refreshForecasts();
@@ -167,7 +167,7 @@
         ChartEngine.loadTicker(ticker, ChartEngine.getCurrentTimeframe());
 
         // Generate & display forecasts
-        ForecastAgents.generateForecasts(ticker);
+        ForecastAgents.generateForecasts(ticker, ChartEngine.getCurrentTimeframe());
         ChartEngine.refreshForecasts();
         updateAgentTable(ticker);
         updateDisagreementPanel(ticker);
@@ -181,7 +181,12 @@
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                ChartEngine.setTimeframe(parseInt(btn.dataset.tf));
+                const tf = parseInt(btn.dataset.tf);
+                ChartEngine.setTimeframe(tf);
+                // Regenerate forecasts with new timeframe step interval
+                const ticker = ChartEngine.getCurrentTicker();
+                ForecastAgents.generateForecasts(ticker, tf);
+                ChartEngine.refreshForecasts();
             });
         });
 

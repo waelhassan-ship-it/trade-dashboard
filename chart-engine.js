@@ -305,19 +305,24 @@ const ChartEngine = (() => {
         if (!allForecasts || Object.keys(allForecasts).length === 0) return;
 
         const price = MarketData.getPrice(ticker);
-        const now = Math.floor(Date.now() / 1000);
-        const candleNow = Math.floor(now / (currentTimeframe * 60)) * (currentTimeframe * 60);
+
+        // Use last candle's time as anchor (forecasts already start from this)
+        const candles = MarketData.getOHLCV(ticker, currentTimeframe);
+        const anchorTime = candles && candles.length > 0
+            ? candles[candles.length - 1].time
+            : Math.floor(Date.now() / 1000);
 
         // Draw each agent's forecast
         Object.values(allForecasts).forEach(f => {
             if (!f?.projections?.length) return;
 
-            // Projection line (starts from current price)
-            const lineData = [{ time: candleNow, value: price }];
+            // Projection line starts from current price at anchor time
+            const lineData = [{ time: anchorTime, value: price }];
+
+            // Forecasts already have correctly-aligned times from forecast-agents.js
             f.projections.forEach(p => {
-                const aligned = Math.floor(p.time / (currentTimeframe * 60)) * (currentTimeframe * 60);
-                if (aligned > candleNow) {
-                    lineData.push({ time: aligned, value: p.value });
+                if (p.time > anchorTime) {
+                    lineData.push({ time: p.time, value: p.value });
                 }
             });
 
@@ -334,27 +339,25 @@ const ChartEngine = (() => {
             const line = chart.addLineSeries({
                 color: f.color,
                 lineWidth: f.agent_id === 'ensemble' ? 3 : 2,
-                lineStyle: f.agent_id === 'ensemble' ? 0 : 2,  // solid for ensemble, dashed for others
+                lineStyle: f.agent_id === 'ensemble' ? 0 : 2,
                 priceLineVisible: false,
                 lastValueVisible: true,
                 crosshairMarkerVisible: false
             });
             line.setData(dedupedLine);
 
-            // Confidence bands
+            // Confidence bands (ensemble only)
             const bands = ForecastAgents.getConfidenceBands(ticker, f.agent_id);
             let upper = null, lower = null;
 
             if (bands.upper.length > 0 && f.agent_id === 'ensemble') {
-                const upperData = [{ time: candleNow, value: price }];
-                const lowerData = [{ time: candleNow, value: price }];
+                const upperData = [{ time: anchorTime, value: price }];
+                const lowerData = [{ time: anchorTime, value: price }];
                 bands.upper.forEach(b => {
-                    const a = Math.floor(b.time / (currentTimeframe * 60)) * (currentTimeframe * 60);
-                    if (a > candleNow) upperData.push({ time: a, value: b.value });
+                    if (b.time > anchorTime) upperData.push({ time: b.time, value: b.value });
                 });
                 bands.lower.forEach(b => {
-                    const a = Math.floor(b.time / (currentTimeframe * 60)) * (currentTimeframe * 60);
-                    if (a > candleNow) lowerData.push({ time: a, value: b.value });
+                    if (b.time > anchorTime) lowerData.push({ time: b.time, value: b.value });
                 });
 
                 const seenU = new Set(), seenL = new Set();
@@ -382,16 +385,15 @@ const ChartEngine = (() => {
 
         // Monte Carlo paths (thin, transparent)
         const mcPaths = ForecastAgents.getMonteCarlo(ticker);
-        const maxMC = Math.min(20, mcPaths.length);  // limit drawn paths
+        const maxMC = Math.min(20, mcPaths.length);
         for (let i = 0; i < maxMC; i++) {
-            const pathData = [{ time: candleNow, value: price }];
+            const pathData = [{ time: anchorTime, value: price }];
             const seen2 = new Set();
-            seen2.add(candleNow);
+            seen2.add(anchorTime);
             mcPaths[i].forEach(p => {
-                const a = Math.floor(p.time / (currentTimeframe * 60)) * (currentTimeframe * 60);
-                if (a > candleNow && !seen2.has(a)) {
-                    pathData.push({ time: a, value: p.value });
-                    seen2.add(a);
+                if (p.time > anchorTime && !seen2.has(p.time)) {
+                    pathData.push({ time: p.time, value: p.value });
+                    seen2.add(p.time);
                 }
             });
             if (pathData.length > 1) {

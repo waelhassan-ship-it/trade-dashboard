@@ -18,13 +18,23 @@ const ForecastAgents = (() => {
     let forecasts = {};     // { ticker: { agent_id: forecast } }
     let monteCarlo = {};    // { ticker: paths[] }
 
+    // Current step interval in seconds (set per forecast call)
+    let _stepSec = 300;
+
     // ── Run forecasts for a ticker ──────────────────────────────────
-    function generateForecasts(ticker) {
+    function generateForecasts(ticker, chartTf) {
+        const tf = chartTf || 5; // default 5-min
+        _stepSec = tf * 60;     // step in seconds matches candle interval
+
         const price = MarketData.getPrice(ticker);
         const hist = MarketData.getHistory(ticker);
         const vol = MarketData.getVolatility(ticker);
-        const candles = MarketData.getOHLCV(ticker, 5);
-        const now = Math.floor(Date.now() / 1000);
+        const candles = MarketData.getOHLCV(ticker, tf);
+
+        // Anchor to last candle's time (not Date.now)
+        const now = candles && candles.length > 0
+            ? candles[candles.length - 1].time
+            : Math.floor(Date.now() / 1000);
 
         if (!price || !hist.length) return;
 
@@ -72,7 +82,7 @@ const ForecastAgents = (() => {
             const noise = MarketData.normalRandom() * vol * price * 0.002;
             p = p + trendComponent + noise;
             projections.push({
-                time: now + i * 300,
+                time: now + i * _stepSec,
                 value: Math.max(0.01, p),
                 confidence: Math.max(0.3, 0.95 - t * 0.55)
             });
@@ -112,7 +122,7 @@ const ForecastAgents = (() => {
             const noise = MarketData.normalRandom() * price * 0.001;
             p = p * (1 + continuation) + noise;
             projections.push({
-                time: now + i * 300,
+                time: now + i * _stepSec,
                 value: Math.max(0.01, p),
                 confidence: Math.max(0.35, 0.92 - t * 0.50)
             });
@@ -143,7 +153,7 @@ const ForecastAgents = (() => {
             const noise = MarketData.normalRandom() * price * 0.0008;
             p = p * (1 + acceleration * 0.5) + noise;
             projections.push({
-                time: now + i * 300,
+                time: now + i * _stepSec,
                 value: Math.max(0.01, p),
                 confidence: Math.max(0.5, 0.90 - (i / steps) * 0.35)
             });
@@ -175,7 +185,7 @@ const ForecastAgents = (() => {
             const volNoise = MarketData.normalRandom() * vol * price * 0.0015 * (1 + t);
             p = p + reversion + volNoise;
             projections.push({
-                time: now + i * 300,
+                time: now + i * _stepSec,
                 value: Math.max(0.01, p),
                 confidence: Math.max(0.3, 0.88 - t * 0.50)
             });
@@ -216,7 +226,7 @@ const ForecastAgents = (() => {
             const noise = MarketData.normalRandom() * price * 0.001;
             p = p * (1 + sentimentDrift) + noise;
             projections.push({
-                time: now + i * 300,
+                time: now + i * _stepSec,
                 value: Math.max(0.01, p),
                 confidence: Math.max(0.35, 0.85 - t * 0.45)
             });
@@ -255,7 +265,7 @@ const ForecastAgents = (() => {
             });
             if (totalWeight > 0) {
                 projections.push({
-                    time: now + (i + 1) * 300,
+                    time: now + (i + 1) * _stepSec,
                     value: weightedSum / totalWeight,
                     confidence: minConf * 0.9 + 0.1
                 });
@@ -287,7 +297,7 @@ const ForecastAgents = (() => {
             for (let i = 1; i <= steps; i++) {
                 const drift = -0.5 * sigma * sigma;
                 s = s * Math.exp(drift + sigma * MarketData.normalRandom());
-                path.push({ time: now + i * 300, value: s });
+                path.push({ time: now + i * _stepSec, value: s });
             }
             paths.push(path);
         }
