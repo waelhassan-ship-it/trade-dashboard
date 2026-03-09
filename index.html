@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Multi-Agent 5-Minute Portfolio Dashboard — Real-time trading signal analysis with 4 autonomous agents.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>TRADE.WAEL.BOT — Multi-Agent Portfolio Terminal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Boot Sequence Overlay -->
+    <div id="boot-overlay" class="boot-overlay">
+        <div class="boot-content">
+            <div class="boot-logo">⚡</div>
+            <div class="boot-title">TRADE.WAEL.BOT</div>
+            <div class="boot-subtitle">Multi-Agent Portfolio Analysis Terminal</div>
+            <div class="boot-progress">
+                <div class="boot-progress-bar" id="boot-progress-bar"></div>
+            </div>
+            <div class="boot-log" id="boot-log"></div>
+        </div>
+    </div>
+
+    <!-- CRT Scanline Overlay -->
+    <div class="crt-overlay"></div>
+
+    <!-- Main Terminal Container -->
+    <div class="terminal-container" id="terminal-container">
+
+        <!-- Top Status Bar -->
+        <header class="terminal-header" id="terminal-header">
+            <div class="header-row">
+                <div class="header-cell timestamp">
+                    <span class="header-icon">⏱️</span>
+                    <span class="header-label">TIMESTAMP:</span>
+                    <span class="header-value" id="header-timestamp">—</span>
+                </div>
+                <div class="header-cell cycle">
+                    <span class="header-icon">🔄</span>
+                    <span class="header-label">CYCLE:</span>
+                    <span class="header-value">5-MIN</span>
+                </div>
+                <div class="header-cell status">
+                    <span class="header-icon" id="status-dot">🟢</span>
+                    <span class="header-label">STATUS:</span>
+                    <span class="header-value" id="header-status">INITIALIZING</span>
+                </div>
+            </div>
+            <div class="header-row sub-row">
+                <div class="header-cell infra">
+                    <span class="header-icon">🖥️</span>
+                    <span class="header-label">INFRASTRUCTURE:</span>
+                    <span class="header-value infra-value">GKE / Qlib+Vertex / FinMem-TGI Active</span>
+                </div>
+                <div class="header-cell countdown">
+                    <span class="header-label">NEXT CYCLE:</span>
+                    <span class="header-value countdown-value" id="countdown-timer">5:00</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Grid -->
+        <main class="dashboard-grid">
+
+            <!-- Panel 1: Market Liquidity -->
+            <section class="panel panel-liquidity" id="panel-liquidity">
+                <div class="panel-header">
+                    <h2 class="panel-title"><span class="panel-icon">🌊</span> MARKET LIQUIDITY & MACRO VIEW</h2>
+                    <div class="panel-badge" id="liquidity-badge">SPY</div>
+                </div>
+                <div class="panel-body">
+                    <div class="liquidity-grid">
+                        <div class="liquidity-metric">
+                            <div class="metric-label">Liquidity Score</div>
+                            <div class="metric-value metric-score" id="liquidity-score">—</div>
+                            <div class="metric-bar"><div class="metric-bar-fill" id="liquidity-bar"></div></div>
+                        </div>
+                        <div class="liquidity-metric">
+                            <div class="metric-label">Spread Status</div>
+                            <div class="metric-value" id="spread-status">—</div>
+                        </div>
+                        <div class="liquidity-metric">
+                            <div class="metric-label">SPY Volume Run-Rate</div>
+                            <div class="metric-value" id="volume-runrate">—</div>
+                        </div>
+                        <div class="liquidity-metric">
+                            <div class="metric-label">VIX Level</div>
+                            <div class="metric-value" id="vix-level">—</div>
+                        </div>
+                    </div>
+                    <div class="liquidity-callout">
+                        <div class="callout-label">Macro Options Flow</div>
+                        <div class="callout-value" id="macro-flow">Awaiting first cycle…</div>
+                    </div>
+                    <div class="liquidity-callout">
+                        <div class="callout-label">System Impact</div>
+                        <div class="callout-value" id="system-impact">Awaiting first cycle…</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Panel 2: Portfolio Signals Table -->
+            <section class="panel panel-signals" id="panel-signals">
+                <div class="panel-header">
+                    <h2 class="panel-title"><span class="panel-icon">📊</span> MULTI-AGENT PORTFOLIO SIGNALS</h2>
+                    <div class="panel-badge">STATEFUL DEBATE</div>
+                </div>
+                <div class="panel-body">
+                    <div class="table-wrapper">
+                        <table class="signals-table" id="signals-table">
+                            <thead>
+                                <tr>
+                                    <th>Ticker</th>
+                                    <th>Ag1: Momntm</th>
+                                    <th>Ag2: Revrsn</th>
+                                    <th>Ag3: Liquid</th>
+                                    <th>Ag4: Options</th>
+                                    <th>Consensus</th>
+                                    <th>Conf %</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="signals-tbody">
+                                <tr class="placeholder-row">
+                                    <td colspan="8">Awaiting first analysis cycle…</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="signals-footer">
+                        <span class="footer-note">Showing assets with confidence &gt; 65% or significant shifts</span>
+                        <span class="footer-count" id="signal-count">0 signals</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Panel 3: Options Spotlight -->
+            <section class="panel panel-options" id="panel-options">
+                <div class="panel-header">
+                    <h2 class="panel-title"><span class="panel-icon">🔮</span> OPTIONS & VOLATILITY SPOTLIGHT</h2>
+                    <div class="panel-badge">RD-Agent Validated</div>
+                </div>
+                <div class="panel-body">
+                    <ul class="options-list" id="options-list">
+                        <li class="options-item placeholder">Awaiting first cycle…</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Panel 4: FinMem Context -->
+            <section class="panel panel-finmem" id="panel-finmem">
+                <div class="panel-header">
+                    <h2 class="panel-title"><span class="panel-icon">🧠</span> FINMEM CONTEXT & ANOMALY ALERTS</h2>
+                    <div class="panel-badge" id="anomaly-badge">NOMINAL</div>
+                </div>
+                <div class="panel-body">
+                    <div class="finmem-section">
+                        <div class="finmem-label">Memory Recall</div>
+                        <blockquote class="finmem-quote" id="memory-recall">Awaiting first cycle…</blockquote>
+                    </div>
+                    <div class="finmem-section">
+                        <div class="finmem-label">Risk Alert</div>
+                        <blockquote class="finmem-quote risk-quote" id="risk-alert">🟢 All systems nominal. No anomalies detected.</blockquote>
+                    </div>
+                    <div class="finmem-section">
+                        <div class="finmem-label">Agent Debate Log</div>
+                        <div class="debate-log" id="debate-log">
+                            <div class="log-entry placeholder">No debate conflicts recorded.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Bottom Status Bar -->
+        <footer class="terminal-footer">
+            <div class="footer-left">
+                <span class="footer-item">CYCLE <span id="cycle-number">0</span></span>
+                <span class="footer-separator">|</span>
+                <span class="footer-item">PORTFOLIO: <span id="portfolio-count">50</span> ASSETS</span>
+                <span class="footer-separator">|</span>
+                <span class="footer-item">AGENTS: <span id="agent-status">4/4 ONLINE</span></span>
+            </div>
+            <div class="footer-right">
+                <span class="footer-item" id="market-hours-status">MARKET CLOSED</span>
+                <span class="footer-separator">|</span>
+                <span class="footer-item">trade.wael.bot</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="market-data.js"></script>
+    <script src="options.js"></script>
+    <script src="agents.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

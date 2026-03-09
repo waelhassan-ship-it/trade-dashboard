@@ -1,0 +1,48 @@
+service: trade
+runtime: python312
+
+handlers:
+- url: /favicon.ico
+  static_files: favicon.ico
+  upload: favicon.ico
+  mime_type: image/x-icon
+  expiration: "7d"
+
+- url: /styles.css
+  static_files: styles.css
+  upload: styles.css
+  mime_type: text/css
+  expiration: "1h"
+
+- url: /market-data.js
+  static_files: market-data.js
+  upload: market-data.js
+  mime_type: application/javascript
+  expiration: "1h"
+
+- url: /options.js
+  static_files: options.js
+  upload: options.js
+  mime_type: application/javascript
+  expiration: "1h"
+
+- url: /agents.js
+  static_files: agents.js
+  upload: agents.js
+  mime_type: application/javascript
+  expiration: "1h"
+
+- url: /dashboard.js
+  static_files: dashboard.js
+  upload: dashboard.js
+  mime_type: application/javascript
+  expiration: "1h"
+
+- url: /
+  static_files: index.html
+  upload: index.html
+  mime_type: text/html
+
+- url: /(.*)
+  static_files: \1
+  upload: (.*)
